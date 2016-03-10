@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.appleframework.model.Operater;
+import com.appleframework.model.Operator;
 import com.appleframework.model.page.Pagination;
 import com.appleframework.model.utils.TypeCaseHelper;
 
@@ -77,6 +77,21 @@ public class PageQuery extends HashMap<String, Object> implements Query {
 		Object obj = TypeCaseHelper.convert(get(key), "Long", null);
 		if (obj != null)
 			return (Long) obj;
+		else
+			return null;
+	}
+	
+	/**
+	 * 以Boolean类型返回键值
+	 * 
+	 * @param key
+	 *            键名
+	 * @return Boolean 键值
+	 */
+	public Boolean getAsBoolean(String key) {
+		Object obj = TypeCaseHelper.convert(get(key), "Boolean", null);
+		if (obj != null)
+			return (Boolean) obj;
 		else
 			return null;
 	}
@@ -201,13 +216,13 @@ public class PageQuery extends HashMap<String, Object> implements Query {
 	}
 
 	@Override
-	public void setDefaultOperater(Operater operater) {
+	public void setDefaultOperater(Operator operater) {
 		put("defaultOperater", operater);
 	}
 
 	@Override
-	public Operater getDefaultOperater() {
-		return (Operater) get("defaultOperater");
+	public Operator getDefaultOperater() {
+		return (Operator) get("defaultOperater");
 	}
 
 	@Override

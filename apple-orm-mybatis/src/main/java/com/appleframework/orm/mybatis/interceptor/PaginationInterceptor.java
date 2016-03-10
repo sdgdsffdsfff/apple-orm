@@ -34,6 +34,8 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.apache.log4j.Logger;
 
 import com.appleframework.model.page.Pagination;
+import com.appleframework.orm.mybatis.parser.SqlParser;
+import com.appleframework.orm.mybatis.parser.SqlServer;
 import com.appleframework.orm.mybatis.query.PageQuery;
 import com.appleframework.orm.mybatis.utils.SystemUtility;
 
@@ -68,6 +70,7 @@ public class PaginationInterceptor implements Interceptor {
 		// 获得查询对象
 		Object parameterObject = boundSql.getParameterObject();
 		Pagination page = null;
+		boolean isCountCache = false;
 		
 		// 根据参数类型判断是否是分页方法
 		if (parameterObject instanceof PageQuery) {
@@ -77,6 +80,7 @@ public class PaginationInterceptor implements Interceptor {
 			// 查询条件Map
 			//Map<String, Object> conditions = query.getQueryParams();
 			page = query.getDefaultPage();
+			isCountCache = page.isCountCache();
 		}
 
 		else if(parameterObject instanceof Map) {
@@ -84,6 +88,7 @@ public class PaginationInterceptor implements Interceptor {
 			Map<String, Object> query = (Map<String, Object>) parameterObject;
 			try {
 				page = (Pagination)query.get("page");
+				isCountCache = page.isCountCache();
 			} catch (BindingException e) {
 				page = null;
 			}
@@ -116,7 +121,20 @@ public class PaginationInterceptor implements Interceptor {
 		}*/
 
 		// 获取查询数来的总数目
-		String countSql = "SELECT COUNT(0) FROM (" + sql + ") AS tmp ";
+		//String countSql = "SELECT COUNT(0) FROM (" + sql + ") AS tmp ";
+		String countSql = null;
+		if ("sqlserver".equals(dialect)) {
+			countSql = SqlParser.getSmartCountSql(sql);
+		}
+		else {
+			if(isCountCache) {
+				countSql = SqlParser.getCacheCountSql(sql);
+			}
+			else {
+				countSql = SqlParser.getSimpleCountSql(sql);
+			}
+		}
+		
 		PreparedStatement countStmt = connection.prepareStatement(countSql);
 		BoundSql countBS = new BoundSql(mappedStatement.getConfiguration(),
 				countSql, boundSql.getParameterMappings(), parameterObject);
@@ -218,11 +236,19 @@ public class PaginationInterceptor implements Interceptor {
 				pageSql.append(page.getFirstResult() + page.getPageSize());
 				pageSql.append(") WHERE r >");
 				pageSql.append(page.getFirstResult());
+			} else if ("sqlserver".equals(dialect)) {
+				return SqlServer.convertToPageSql(sql, (page.getPageNo() - 1) * page.getPageSize(), page.getPageSize());
+			} else {
+				
 			}
 			return pageSql.toString();
 		} else {
 			return sql;
 		}
+	}	
+
+	public void setDialect(String dialect) {
+		this.dialect = dialect;
 	}
 
 	public Object plugin(Object arg0) {

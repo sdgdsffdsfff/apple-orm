@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>apple-orm</artifactId>
 		<groupId>com.appleframework.orm</groupId>
-		<version>0.0.6.RELEASE</version>
+		<version>0.1.1.RELEASE</version>
 	</parent>
 	<artifactId>apple-orm-mybatis</artifactId>
 	<name>apple-orm-mybatis</name>
@@ -57,6 +57,12 @@
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis-spring</artifactId>
 		</dependency>
+		
+		<dependency>
+      		<groupId>com.github.jsqlparser</groupId>
+      		<artifactId>jsqlparser</artifactId>
+      		<version>0.9.1</version>
+    	</dependency>
 	</dependencies>
 
 </project>
